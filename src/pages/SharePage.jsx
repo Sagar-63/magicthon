@@ -8,11 +8,19 @@ export default function SharePage({ meme, onEditAgain, onRestart }) {
   const [copied, setCopied] = useState(null) // 'image' | 'link' | null
   const [error, setError] = useState(null)
 
-  // Auto-save the meme to the local store and generate a share id.
+  // Save the meme to the backend on mount; the share id comes from the server.
   useEffect(() => {
     if (!meme) return
-    const id = saveMeme(meme)
-    setMemeId(id)
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { id } = await saveMeme(meme)
+        if (!cancelled) setMemeId(id)
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Could not save')
+      }
+    })()
+    return () => { cancelled = true }
   }, [meme])
 
   if (!meme) {
@@ -98,9 +106,6 @@ export default function SharePage({ meme, onEditAgain, onRestart }) {
         >
           Open as a recipient ↗
         </button>
-        <p className="share-link-note">
-          Preview mode — link works in this browser only until backend is wired.
-        </p>
       </div>
 
       {/* Live reactions for the creator */}

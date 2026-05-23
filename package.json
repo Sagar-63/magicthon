@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently -n vite,api -c cyan,magenta \"npm:dev:vite\" \"npm:dev:api\"",
     "dev:vite": "vite",
-    "dev:api": "node --watch dev-server.mjs",
+    "dev:api": "node --watch --env-file=.env.local dev-server.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

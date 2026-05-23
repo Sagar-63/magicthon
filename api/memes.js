@@ -54,8 +54,8 @@ export default async function handler(req, res) {
   const row = {
     id,
     image_url: imageUrl,
-    width: Number.isFinite(width) ? width : null,
-    height: Number.isFinite(height) ? height : null,
+    width: Number.isFinite(width) ? Math.round(width) : null,
+    height: Number.isFinite(height) ? Math.round(height) : null,
     template_id: typeof templateId === 'string' ? templateId : null,
     layers: layers && typeof layers === 'object' ? layers : null,
     created_at: new Date().toISOString(),

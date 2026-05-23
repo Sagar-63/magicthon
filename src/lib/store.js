@@ -1,15 +1,11 @@
 /**
- * Local meme store — pretends to be a backend so we can preview the share-link
- * + live-reactions flow before wiring Supabase.
+ * Meme store — talks to /api/memes via the backend.
  *
- * - Persistence: localStorage (per-browser, per-origin)
- * - Live updates between tabs: BroadcastChannel
- *
- * When we swap to Supabase, the function signatures stay the same; only the
- * implementation changes.
+ * Same function names as the old localStorage stub; callers now await them.
+ * Same-browser cross-tab updates still piggyback on BroadcastChannel; live
+ * cross-device updates come from Pusher once that's wired.
  */
 
-const STORAGE_KEY = 'magicthon:memes:v1'
 const CHANNEL_NAME = 'magicthon:reactions'
 
 export const REACTION_EMOJIS = ['😂', '💀', '🔥', '😭', '🤯', '❤️']
@@ -17,89 +13,88 @@ export const REACTION_EMOJIS = ['😂', '💀', '🔥', '😭', '🤯', '❤️'
 const channel =
   typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null
 
-function loadAll() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
-  } catch {
-    return {}
-  }
-}
-
-function saveAll(data) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  } catch (err) {
-    console.warn('magicthon: storage full?', err)
-  }
-}
-
-function generateId(len = 6) {
-  const chars = 'abcdefghijkmnpqrstuvwxyz23456789'
-  let id = ''
-  for (let i = 0; i < len; i++) id += chars[Math.floor(Math.random() * chars.length)]
-  return id
-}
-
 function emptyReactions() {
   return Object.fromEntries(REACTION_EMOJIS.map((e) => [e, 0]))
 }
 
-/** Save a meme and return its id. */
-export function saveMeme(meme) {
-  const all = loadAll()
-  const id = generateId()
-  all[id] = {
-    id,
-    dataUrl: meme.dataUrl,
-    width: meme.width,
-    height: meme.height,
-    templateId: meme.templateId,
-    createdAt: Date.now(),
-    reactions: emptyReactions(),
+/**
+ * POST the finished meme to the server.
+ * Input: { dataUrl, width, height, templateId, layers }
+ * Returns: { id, imageUrl, createdAt }
+ */
+export async function saveMeme(meme) {
+  const res = await fetch('/api/memes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      dataUrl: meme.dataUrl,
+      width: meme.width,
+      height: meme.height,
+      templateId: meme.templateId,
+      layers: meme.layers,
+    }),
+  })
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}))
+    throw new Error(detail.error || `save failed (${res.status})`)
   }
-  saveAll(all)
-  return id
+  return res.json()
 }
 
-/** Return a stored meme or null. */
-export function getMeme(id) {
-  return loadAll()[id] || null
-}
-
-/** Increment a reaction; broadcasts to other tabs. */
-export function reactToMeme(id, emoji) {
-  const all = loadAll()
-  if (!all[id]) return null
-  all[id].reactions = all[id].reactions || emptyReactions()
-  all[id].reactions[emoji] = (all[id].reactions[emoji] || 0) + 1
-  saveAll(all)
-  channel?.postMessage({ type: 'react', id, emoji, at: Date.now() })
-  return all[id]
+/** GET a meme by id. Returns null on 404. */
+export async function getMeme(id) {
+  if (!id) return null
+  const res = await fetch(`/api/memes/${encodeURIComponent(id)}`)
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(`fetch failed (${res.status})`)
+  const data = await res.json()
+  return {
+    ...data,
+    reactions: { ...emptyReactions(), ...(data.reactions || {}) },
+  }
 }
 
 /**
- * Subscribe to live reaction events for a meme.
- * cb is called with { emoji, at } whenever a reaction lands (in this tab or another).
- * Returns an unsubscribe function.
+ * POST a reaction. Returns the fresh counts ({emoji: count}) or null if the
+ * meme doesn't exist. Also broadcasts to same-browser tabs.
+ */
+export async function reactToMeme(id, emoji) {
+  const res = await fetch(`/api/memes/${encodeURIComponent(id)}/react`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ emoji }),
+  })
+  if (res.status === 404) return null
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}))
+    throw new Error(detail.error || `react failed (${res.status})`)
+  }
+  const data = await res.json()
+  const counts = { ...emptyReactions(), ...(data.counts || {}) }
+  channel?.postMessage({ type: 'react', id, emoji, counts, at: Date.now() })
+  return counts
+}
+
+/**
+ * Subscribe to live reaction events for a meme (same browser, cross-tab).
+ * cb is called with { emoji, counts, at }.
  */
 export function subscribeToReactions(id, cb) {
   if (!channel) return () => {}
   const onMessage = (e) => {
     if (e.data?.type === 'react' && e.data.id === id) {
-      cb({ emoji: e.data.emoji, at: e.data.at })
+      cb({ emoji: e.data.emoji, counts: e.data.counts, at: e.data.at })
     }
   }
   channel.addEventListener('message', onMessage)
   return () => channel.removeEventListener('message', onMessage)
 }
 
-/** Build the public URL for a meme id. */
 export function buildShareUrl(id) {
   const { origin, pathname } = window.location
   return `${origin}${pathname}#/m/${id}`
 }
 
-/** Parse the current URL into a route object. */
 export function parseRoute() {
   const m = window.location.hash.match(/^#\/m\/([a-z0-9]+)/i)
   return m ? { type: 'recipient', id: m[1] } : { type: 'app' }

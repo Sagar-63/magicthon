@@ -4,11 +4,24 @@ import Reactions from '../components/Reactions'
 import './RecipientPage.css'
 
 export default function RecipientPage({ memeId }) {
-  const [meme, setMeme] = useState(() => getMeme(memeId))
+  const [meme, setMeme] = useState(null)
+  const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'missing' | 'error'
 
-  // Re-check store on mount (in case it was just written).
   useEffect(() => {
-    setMeme(getMeme(memeId))
+    let cancelled = false
+    setStatus('loading')
+    ;(async () => {
+      try {
+        const m = await getMeme(memeId)
+        if (cancelled) return
+        if (!m) { setStatus('missing'); return }
+        setMeme(m)
+        setStatus('ready')
+      } catch {
+        if (!cancelled) setStatus('error')
+      }
+    })()
+    return () => { cancelled = true }
   }, [memeId])
 
   const goHome = () => {
@@ -16,7 +29,19 @@ export default function RecipientPage({ memeId }) {
     window.location.reload()
   }
 
-  if (!meme) {
+  if (status === 'loading') {
+    return (
+      <div className="recipient recipient--missing">
+        <div className="recipient-brand">
+          <span className="recipient-brand-dot" />
+          <span>MAGICTHON</span>
+        </div>
+        <h1 className="recipient-missing-title">loading…</h1>
+      </div>
+    )
+  }
+
+  if (status !== 'ready' || !meme) {
     return (
       <div className="recipient recipient--missing">
         <div className="recipient-brand">
@@ -44,7 +69,7 @@ export default function RecipientPage({ memeId }) {
 
       <div className="recipient-content">
         <div className="recipient-frame">
-          <img src={meme.dataUrl} alt="a magicthon meme" className="recipient-img" />
+          <img src={meme.imageUrl} alt="a magicthon meme" className="recipient-img" />
         </div>
 
         <div className="recipient-reactions">

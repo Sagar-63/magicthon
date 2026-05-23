@@ -9,29 +9,22 @@ import './Reactions.css'
  *  - onReactionLanded: optional callback for external animations (e.g. floating burst)
  */
 export default function Reactions({ memeId, mode = 'react', onReactionLanded }) {
-  const [reactions, setReactions] = useState(() => getMeme(memeId)?.reactions || {})
+  const [reactions, setReactions] = useState({})
   const [bumped, setBumped] = useState({}) // emoji -> timestamp, for bump animation
   const [floats, setFloats] = useState([]) // [{id, emoji, x}]
   const containerRef = useRef(null)
 
-  // Refresh from store on mount (in case parent gave us a stale read).
+  // Initial load from API.
   useEffect(() => {
-    const m = getMeme(memeId)
-    if (m) setReactions(m.reactions || {})
+    let cancelled = false
+    ;(async () => {
+      try {
+        const m = await getMeme(memeId)
+        if (!cancelled && m) setReactions(m.reactions || {})
+      } catch { /* ignore — recipient page handles the hard failure */ }
+    })()
+    return () => { cancelled = true }
   }, [memeId])
-
-  // Subscribe to live cross-tab reaction events.
-  useEffect(() => {
-    const unsubscribe = subscribeToReactions(memeId, ({ emoji }) => {
-      const m = getMeme(memeId)
-      if (m) setReactions(m.reactions || {})
-      // animate
-      setBumped((b) => ({ ...b, [emoji]: Date.now() }))
-      pushFloat(emoji)
-      onReactionLanded?.(emoji)
-    })
-    return unsubscribe
-  }, [memeId, onReactionLanded])
 
   const pushFloat = (emoji) => {
     const id = Math.random().toString(36).slice(2)
@@ -40,12 +33,26 @@ export default function Reactions({ memeId, mode = 'react', onReactionLanded }) 
     setTimeout(() => setFloats((f) => f.filter((it) => it.id !== id)), 1400)
   }
 
-  const handleClick = (emoji) => {
-    const updated = reactToMeme(memeId, emoji)
-    if (updated) setReactions({ ...updated.reactions })
+  // Same-browser cross-tab live updates.
+  useEffect(() => {
+    const unsubscribe = subscribeToReactions(memeId, ({ emoji, counts }) => {
+      if (counts) setReactions(counts)
+      setBumped((b) => ({ ...b, [emoji]: Date.now() }))
+      pushFloat(emoji)
+      onReactionLanded?.(emoji)
+    })
+    return unsubscribe
+  }, [memeId, onReactionLanded])
+
+  const handleClick = async (emoji) => {
+    // Optimistic bump for snappy feel
     setBumped((b) => ({ ...b, [emoji]: Date.now() }))
     pushFloat(emoji)
     onReactionLanded?.(emoji)
+    try {
+      const counts = await reactToMeme(memeId, emoji)
+      if (counts) setReactions(counts)
+    } catch { /* swallow — animation already fired */ }
   }
 
   const total = Object.values(reactions).reduce((a, b) => a + b, 0)
