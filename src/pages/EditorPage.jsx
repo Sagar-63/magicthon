@@ -166,6 +166,29 @@ export default function EditorPage({ photo, suggestion, onDone, onBack }) {
     )
   }
 
+  // ─── Ship: snapshot the stage and hand off to SharePage ──────────
+  const handleShip = () => {
+    const stage = stageRef.current
+    if (!stage) return
+    // Deselect so the transformer/handles aren't baked into the export
+    setSelectedId(null)
+    setEditingId(null)
+    // Wait one frame so the transformer detaches before we draw.
+    requestAnimationFrame(() => {
+      const dataUrl = stage.toDataURL({
+        pixelRatio: Math.max(2, 1080 / canvasW), // ~1080px wide minimum
+        mimeType: 'image/png',
+      })
+      onDone({
+        dataUrl,
+        width: canvasW,
+        height: canvasH,
+        templateId,
+        layers,
+      })
+    })
+  }
+
   return (
     <div className="editor">
       <div className="editor-bar">
@@ -174,7 +197,7 @@ export default function EditorPage({ photo, suggestion, onDone, onBack }) {
           <span className="editor-template-name">{template.name}</span>
           <span className="editor-template-desc">{template.desc}</span>
         </div>
-        <button className="btn-primary" onClick={onDone}>Ship it →</button>
+        <button className="btn-primary" onClick={handleShip}>Ship it →</button>
       </div>
 
       {/* Floating toolbar — sits above the canvas, only visible on selection */}

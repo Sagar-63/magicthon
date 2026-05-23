@@ -14,12 +14,14 @@ export default function App() {
   const [photo, setPhoto] = useState(null) // { url, file }
   const [suggestions, setSuggestions] = useState([])
   const [chosen, setChosen] = useState(null)
+  const [finalMeme, setFinalMeme] = useState(null) // { dataUrl, width, height, templateId, layers }
 
   const reset = () => {
     setStep('upload')
     setPhoto(null)
     setSuggestions([])
     setChosen(null)
+    setFinalMeme(null)
   }
 
   return (
@@ -58,14 +60,17 @@ export default function App() {
           <EditorPage
             photo={photo}
             suggestion={chosen}
-            onDone={() => setStep('share')}
+            onDone={(meme) => {
+              setFinalMeme(meme)
+              setStep('share')
+            }}
             onBack={() => setStep('suggestions')}
           />
         )}
         {step === 'share' && (
           <SharePage
-            photo={photo}
-            suggestion={chosen}
+            meme={finalMeme}
+            onEditAgain={() => setStep('editor')}
             onRestart={reset}
           />
         )}
