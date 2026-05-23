@@ -1,9 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { saveMeme, buildShareUrl } from '../lib/store'
+import Reactions from '../components/Reactions'
 import './SharePage.css'
 
 export default function SharePage({ meme, onEditAgain, onRestart }) {
-  const [copied, setCopied] = useState(false)
+  const [memeId, setMemeId] = useState(null)
+  const [copied, setCopied] = useState(null) // 'image' | 'link' | null
   const [error, setError] = useState(null)
+
+  // Auto-save the meme to the local store and generate a share id.
+  useEffect(() => {
+    if (!meme) return
+    const id = saveMeme(meme)
+    setMemeId(id)
+  }, [meme])
 
   if (!meme) {
     return (
@@ -14,6 +24,9 @@ export default function SharePage({ meme, onEditAgain, onRestart }) {
     )
   }
 
+  const shareUrl = memeId ? buildShareUrl(memeId) : ''
+  const prettyUrl = shareUrl.replace(/^https?:\/\//, '')
+
   const handleDownload = () => {
     const a = document.createElement('a')
     a.download = `magicthon-${Date.now()}.png`
@@ -21,17 +34,14 @@ export default function SharePage({ meme, onEditAgain, onRestart }) {
     a.click()
   }
 
-  const handleCopy = async () => {
+  const handleCopyImage = async () => {
     try {
       const blob = await (await fetch(meme.dataUrl)).blob()
       if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob }),
-        ])
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+        setCopied('image')
+        setTimeout(() => setCopied(null), 2000)
       } else {
-        // Fallback: trigger download instead.
         handleDownload()
         setError('Clipboard not supported here — downloaded instead.')
       }
@@ -40,13 +50,27 @@ export default function SharePage({ meme, onEditAgain, onRestart }) {
     }
   }
 
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied('link')
+      setTimeout(() => setCopied(null), 2000)
+    } catch (err) {
+      setError(err.message || 'Could not copy link')
+    }
+  }
+
+  const openAsRecipient = () => {
+    window.open(shareUrl, '_blank', 'noopener')
+  }
+
   return (
     <div className="share">
       <div className="share-head">
         <h1 className="share-title">
-          Shipped.<span className="accent">.</span>
+          Shipped<span className="accent">.</span>
         </h1>
-        <p className="share-sub">Your meme is ready. Save it, or send it to someone with bad taste.</p>
+        <p className="share-sub">Your meme is ready. Send it to someone with bad taste.</p>
       </div>
 
       <div className="share-frame">
@@ -54,15 +78,45 @@ export default function SharePage({ meme, onEditAgain, onRestart }) {
         <span className="share-stamp">freshly cooked</span>
       </div>
 
+      {/* Share link card */}
+      <div className="share-link">
+        <div className="share-link-row">
+          <span className="share-link-prefix">link</span>
+          <span className="share-link-url" title={shareUrl}>{prettyUrl || 'preparing…'}</span>
+          <button
+            className="share-link-btn"
+            onClick={handleCopyLink}
+            disabled={!memeId}
+          >
+            {copied === 'link' ? '✓ Copied' : 'Copy'}
+          </button>
+        </div>
+        <button
+          className="share-link-preview"
+          onClick={openAsRecipient}
+          disabled={!memeId}
+        >
+          Open as a recipient ↗
+        </button>
+        <p className="share-link-note">
+          Preview mode — link works in this browser only until backend is wired.
+        </p>
+      </div>
+
+      {/* Live reactions for the creator */}
+      {memeId && (
+        <div className="share-reactions">
+          <Reactions memeId={memeId} mode="watch" />
+        </div>
+      )}
+
+      {/* File actions */}
       <div className="share-actions">
         <button className="btn-primary" onClick={handleDownload}>
           <DownloadIcon /> Download PNG
         </button>
-        <button className="btn-ghost" onClick={handleCopy}>
-          {copied ? <><CheckIcon /> Copied!</> : <><CopyIcon /> Copy to clipboard</>}
-        </button>
-        <button className="btn-ghost btn-link" disabled title="Coming next">
-          <LinkIcon /> Share link (soon)
+        <button className="btn-ghost" onClick={handleCopyImage}>
+          {copied === 'image' ? <><CheckIcon /> Copied!</> : <><CopyIcon /> Copy image</>}
         </button>
       </div>
 
@@ -96,14 +150,6 @@ function CheckIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 12l5 5L20 6" />
-    </svg>
-  )
-}
-function LinkIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" />
-      <path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
     </svg>
   )
 }

@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  padding: 32px 0 24px;
+  gap: 22px;
+  padding: 28px 0 24px;
   flex: 1;
 }
 
@@ -18,7 +18,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   text-align: center;
 }
 
@@ -44,7 +44,7 @@
 /* ─── Meme frame ────────────────────────────────────────────────── */
 .share-frame {
   position: relative;
-  max-width: 540px;
+  max-width: 480px;
   width: 100%;
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -81,7 +81,113 @@
   box-shadow: 0 4px 16px rgba(198, 255, 61, 0.4);
 }
 
-/* ─── Actions ───────────────────────────────────────────────────── */
+/* ─── Share link card ───────────────────────────────────────────── */
+.share-link {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.share-link-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.share-link-prefix {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+
+.share-link-url {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-link-btn {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #0a0a0a;
+  border: 1px solid var(--accent);
+  flex-shrink: 0;
+  transition: transform var(--t-fast);
+}
+
+.share-link-btn:hover {
+  transform: translateY(-1px);
+}
+
+.share-link-btn:disabled {
+  background: var(--bg-elev-2);
+  color: var(--text-mute);
+  border-color: var(--border);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.share-link-preview {
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.share-link-preview:hover {
+  color: var(--accent);
+}
+
+.share-link-preview:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.share-link-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-mute);
+  line-height: 1.4;
+}
+
+/* ─── Live reactions ────────────────────────────────────────────── */
+.share-reactions {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* ─── File actions ──────────────────────────────────────────────── */
 .share-actions {
   display: flex;
   flex-wrap: wrap;
@@ -95,11 +201,6 @@
   padding: 12px 18px;
 }
 
-.btn-link {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
 .share-error {
   font-family: var(--mono);
   font-size: 12px;
@@ -110,11 +211,11 @@
 .share-footer {
   display: flex;
   gap: 16px;
-  margin-top: 8px;
-  padding-top: 20px;
+  margin-top: 4px;
+  padding-top: 18px;
   border-top: 1px solid var(--border);
   width: 100%;
-  max-width: 540px;
+  max-width: 480px;
   justify-content: space-between;
 }
 
@@ -132,10 +233,10 @@
 
 @media (max-width: 640px) {
   .share {
-    padding: 16px 0;
-    gap: 18px;
+    padding: 12px 0;
+    gap: 16px;
   }
-  .share-frame {
+  .share-frame, .share-link, .share-reactions {
     max-width: 100%;
   }
   .share-actions {
@@ -146,7 +247,7 @@
     flex: 1 1 calc(50% - 5px);
     justify-content: center;
   }
-  .btn-link {
-    flex: 1 1 100% !important;
+  .share-footer {
+    max-width: 100%;
   }
 }

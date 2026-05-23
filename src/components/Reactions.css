@@ -1,0 +1,141 @@
+.reactions {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.reactions-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-mute);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
+.reactions-meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; box-shadow: 0 0 8px var(--accent); }
+}
+
+.reactions-meta-total {
+  color: var(--text-dim);
+}
+
+.reactions-bar {
+  display: inline-flex;
+  gap: 6px;
+  padding: 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-elev-2);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 18px;
+  transition: transform var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+
+.reaction:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.reaction:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.reaction-emoji {
+  display: inline-block;
+  transition: transform 220ms cubic-bezier(0.4, 1.6, 0.6, 1);
+}
+
+.reaction-count {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  min-width: 14px;
+  text-align: left;
+}
+
+.reaction--has-count .reaction-count {
+  color: var(--accent);
+}
+
+.reaction--bumped {
+  border-color: var(--accent);
+}
+
+.reaction--bumped .reaction-emoji {
+  animation: bump 480ms cubic-bezier(0.2, 1.4, 0.6, 1);
+}
+
+.reaction--bumped .reaction-count {
+  animation: count-pop 480ms cubic-bezier(0.2, 1.4, 0.6, 1);
+}
+
+@keyframes bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.5) rotate(-8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes count-pop {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-3px) scale(1.2); color: var(--accent); }
+  100% { transform: translateY(0); }
+}
+
+/* ─── Floating emoji bursts ─────────────────────────────────────── */
+.reactions-floats {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.reaction-float {
+  position: absolute;
+  bottom: 0;
+  font-size: 28px;
+  animation: float-up 1.4s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes float-up {
+  0%   { transform: translateY(0)    rotate(0deg)   scale(0.6); opacity: 0; }
+  15%  { opacity: 1; transform: translateY(-10px) rotate(-6deg) scale(1.2); }
+  100% { transform: translateY(-140px) rotate(12deg) scale(1); opacity: 0; }
+}
+
+@media (max-width: 720px) {
+  .reaction {
+    padding: 7px 11px;
+    font-size: 17px;
+  }
+}

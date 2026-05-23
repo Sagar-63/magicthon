@@ -1,15 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import UploadPage from './pages/UploadPage'
 import ProcessingPage from './pages/ProcessingPage'
 import SuggestionsPage from './pages/SuggestionsPage'
 import EditorPage from './pages/EditorPage'
 import SharePage from './pages/SharePage'
+import RecipientPage from './pages/RecipientPage'
 import Header from './components/Header'
+import { parseRoute } from './lib/store'
 import './App.css'
 
 const STEPS = ['upload', 'processing', 'suggestions', 'editor', 'share']
 
 export default function App() {
+  const [route, setRoute] = useState(() => parseRoute())
+
+  useEffect(() => {
+    const onHash = () => setRoute(parseRoute())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  if (route.type === 'recipient') {
+    return <RecipientPage memeId={route.id} />
+  }
+
+  return <CreatorApp />
+}
+
+function CreatorApp() {
   const [step, setStep] = useState('upload')
   const [photo, setPhoto] = useState(null) // { url, file }
   const [suggestions, setSuggestions] = useState([])
