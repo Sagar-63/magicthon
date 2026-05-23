@@ -21,9 +21,9 @@ CONSTRAINTS:
 - Each suggestion must work as a standalone post.
 
 OUTPUT:
-- Always call submit_meme_suggestions with exactly 6 items.
-- One per templateId in: classic, caption-bar, top-caption, subtitle, stamp, headline.
-- "headline" is your shorthand label shown in the picker — punchy, lowercase, ≤ 8 words.`
+- Always call submit_meme_suggestions with EXACTLY 6 items.
+- Each item MUST have a DIFFERENT templateId — one for each of: classic, caption-bar, top-caption, subtitle, stamp, headline.
+- Each item also has a top-level "label" field — a punchy, lowercase, ≤ 8-word picker-card title. This is a SUMMARY of the joke, NOT the slot text. It is unrelated to the "headline" slot inside the headline template.`
 
 export const USER_PROMPT = `Look at the attached photo. Write a sharp, photo-specific meme caption for each of these six templates. Each gets its OWN joke, not variations of the same idea.
 
@@ -68,7 +68,7 @@ export const SUGGESTION_TOOL = {
         maxItems: 6,
         items: {
           type: 'object',
-          required: ['templateId', 'texts', 'headline'],
+          required: ['templateId', 'texts', 'label'],
           properties: {
             templateId: {
               type: 'string',
@@ -81,9 +81,9 @@ export const SUGGESTION_TOOL = {
                 'headline',
               ],
             },
-            headline: {
+            label: {
               type: 'string',
-              description: 'punchy ≤ 8-word label for the picker card',
+              description: 'punchy ≤ 8-word picker-card title for this suggestion (NOT the slot text)',
             },
             texts: {
               type: 'object',
@@ -105,32 +105,32 @@ export const SUGGESTION_TOOL = {
 export const MOCK_SUGGESTIONS = [
   {
     templateId: 'classic',
-    headline: 'when the bug fixes itself',
+    label: 'when the bug fixes itself',
     texts: { top: 'WHEN THE BUG FIXES ITSELF', bottom: "BUT YOU DON'T KNOW WHY" },
   },
   {
     templateId: 'caption-bar',
-    headline: 'pov: you finally shipped it',
+    label: 'pov: you finally shipped it',
     texts: { caption: 'pov: you finally finished the side project' },
   },
   {
     templateId: 'top-caption',
-    headline: 'me after one cup of coffee',
+    label: 'me after one cup of coffee',
     texts: { caption: 'me, an intellectual, after one cup of coffee:' },
   },
   {
     templateId: 'subtitle',
-    headline: 'wes anderson energy',
+    label: 'wes anderson energy',
     texts: { subtitle: 'and that’s how I knew the demo was going to crash.' },
   },
   {
     templateId: 'stamp',
-    headline: 'verdict: iconic',
+    label: 'verdict: iconic',
     texts: { stamp: 'VERDICT: ICONIC' },
   },
   {
     templateId: 'headline',
-    headline: 'local dev discovers inner peace',
+    label: 'local dev discovers inner peace',
     texts: {
       headline: 'Local Dev Discovers Inner Peace',
       dek: 'sources confirm it lasted twelve minutes.',

@@ -6,12 +6,12 @@ import './Stub.css'
 // In normal mock mode the server itself returns canned suggestions, so
 // this only kicks in for a genuine failure.
 const FALLBACK_SUGGESTIONS = [
-  { templateId: 'classic',     headline: 'when the bug fixes itself',  texts: { top: 'WHEN THE BUG FIXES ITSELF', bottom: "BUT YOU DON'T KNOW WHY" } },
-  { templateId: 'caption-bar', headline: 'pov: shipping a side project', texts: { caption: 'pov: you finally finished the side project' } },
-  { templateId: 'top-caption', headline: 'me after one cup of coffee', texts: { caption: 'me, an intellectual, after one cup of coffee:' } },
-  { templateId: 'subtitle',    headline: 'wes anderson energy',         texts: { subtitle: 'and that’s how I knew the demo was going to crash.' } },
-  { templateId: 'stamp',       headline: 'verdict: iconic',             texts: { stamp: 'VERDICT: ICONIC' } },
-  { templateId: 'headline',    headline: 'breaking: local dev calm',    texts: { headline: 'Local Dev Discovers Inner Peace', dek: 'sources confirm it lasted twelve minutes.' } },
+  { templateId: 'classic',     label: 'when the bug fixes itself',  texts: { top: 'WHEN THE BUG FIXES ITSELF', bottom: "BUT YOU DON'T KNOW WHY" } },
+  { templateId: 'caption-bar', label: 'pov: shipping a side project', texts: { caption: 'pov: you finally finished the side project' } },
+  { templateId: 'top-caption', label: 'me after one cup of coffee', texts: { caption: 'me, an intellectual, after one cup of coffee:' } },
+  { templateId: 'subtitle',    label: 'wes anderson energy',         texts: { subtitle: 'and that’s how I knew the demo was going to crash.' } },
+  { templateId: 'stamp',       label: 'verdict: iconic',             texts: { stamp: 'VERDICT: ICONIC' } },
+  { templateId: 'headline',    label: 'breaking: local dev calm',    texts: { headline: 'Local Dev Discovers Inner Peace', dek: 'sources confirm it lasted twelve minutes.' } },
 ]
 
 export default function ProcessingPage({ photo, onReady }) {

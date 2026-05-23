@@ -84,30 +84,50 @@ export default async function handler(req, res) {
     }
 
     const raw = toolUse.input?.suggestions || []
+    console.log(`[suggest] claude returned ${raw.length} raw suggestions`)
 
-    // Defensive: dedupe by templateId and keep first 6
+    // Dedupe by templateId; tolerant of missing top-level label (synthesize from texts).
     const seen = new Set()
     const clean = []
+    let droppedDup = 0
+    let droppedInvalid = 0
+    let synthLabel = 0
+
     for (const s of raw) {
-      if (!s || seen.has(s.templateId)) continue
-      if (!s.templateId || !s.texts || !s.headline) continue
+      if (!s || !s.templateId || !s.texts) { droppedInvalid++; continue }
+      if (seen.has(s.templateId)) { droppedDup++; continue }
+      let label = s.label || s.headline // accept old field name too, just in case
+      if (!label || typeof label !== 'string' || !label.trim()) {
+        // Synthesize from the first text value — keeps Claude's joke even when it
+        // forgets the top-level label.
+        const firstText = Object.values(s.texts).find(
+          (v) => typeof v === 'string' && v.trim(),
+        )
+        label = firstText ? firstText.toLowerCase().slice(0, 60) : s.templateId
+        synthLabel++
+      }
       seen.add(s.templateId)
-      clean.push(s)
+      clean.push({ templateId: s.templateId, texts: s.texts, label })
     }
 
-    // Backfill any missing templates from MOCK_SUGGESTIONS so frontend always
-    // gets a full set of 6, even if Claude skipped one.
+    const realCount = clean.length
+    let backfilled = 0
     for (const fallback of MOCK_SUGGESTIONS) {
       if (clean.length >= 6) break
       if (!seen.has(fallback.templateId)) {
         clean.push(fallback)
         seen.add(fallback.templateId)
+        backfilled++
       }
     }
 
+    console.log(
+      `[suggest] kept ${realCount} real (synth-label=${synthLabel}, dropped-dup=${droppedDup}, dropped-invalid=${droppedInvalid}), backfilled ${backfilled} mock`,
+    )
+
     return res.status(200).json({
       suggestions: clean,
-      meta: { mode: 'real', model: 'claude-sonnet-4-6' },
+      meta: { mode: 'real', model: 'claude-sonnet-4-6', realCount, backfilled },
     })
   } catch (err) {
     if (err?.status === 429) {

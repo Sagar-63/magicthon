@@ -35,7 +35,7 @@ export default function SuggestionsPage({ photo, suggestions, onPick, onBack }) 
                 <span className="suggestion-card-template">
                   {tpl?.name || s.templateId}
                 </span>
-                <span className="suggestion-card-headline">{s.headline}</span>
+                <span className="suggestion-card-headline">{s.label || s.headline}</span>
               </div>
             </button>
           )
