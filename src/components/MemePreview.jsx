@@ -84,12 +84,13 @@ export default function MemePreview({
                   fill={layer.fill}
                   stroke={layer.stroke || undefined}
                   strokeWidth={layer.stroke ? layer.strokePct * fontSize : 0}
+                  fillAfterStrokeEnabled={!!layer.stroke}
                   lineJoin="round"
                   align={layer.align}
                   shadowColor={layer.shadow ? '#000' : undefined}
-                  shadowBlur={layer.shadow ? fontSize * 0.15 : 0}
-                  shadowOpacity={layer.shadow ? 0.7 : 0}
-                  shadowOffsetY={layer.shadow ? fontSize * 0.05 : 0}
+                  shadowBlur={layer.shadow ? fontSize * 0.28 : 0}
+                  shadowOpacity={layer.shadow ? 0.9 : 0}
+                  shadowOffsetY={layer.shadow ? fontSize * 0.06 : 0}
                 />
               )
             })}

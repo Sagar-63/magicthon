@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { saveMeme, buildShareUrl } from '../lib/store'
 import Reactions from '../components/Reactions'
+import Confetti from '../components/Confetti'
 import './SharePage.css'
 
 export default function SharePage({ meme, onEditAgain, onRestart }) {
@@ -74,6 +75,7 @@ export default function SharePage({ meme, onEditAgain, onRestart }) {
 
   return (
     <div className="share">
+      <Confetti trigger={memeId} />
       <div className="share-head">
         <h1 className="share-title">
           Shipped<span className="accent">.</span>
