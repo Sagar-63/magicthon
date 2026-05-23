@@ -154,3 +154,5 @@ vite.config.js      Vite config + /api proxy to port 3001
 
 For more on the API surface and mock-mode behavior per service, see
 [`api/README.md`](api/README.md).
+
+## [Demo runnig instance](https://magicthon-sooty.vercel.app/)
