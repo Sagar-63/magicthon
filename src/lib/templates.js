@@ -21,7 +21,7 @@
 export const TEMPLATES = [
   {
     id: 'classic',
-    name: 'Classic',
+    name: 'First',
     desc: 'Impact, top + bottom, the OG',
     slots: [
       {
@@ -46,7 +46,7 @@ export const TEMPLATES = [
   },
   {
     id: 'caption-bar',
-    name: 'Caption Bar',
+    name: 'Second',
     desc: 'Modern reaction-meme look',
     bar: { y: 0.86, height: 0.14, color: '#000000' },
     slots: [
@@ -63,7 +63,7 @@ export const TEMPLATES = [
   },
   {
     id: 'top-caption',
-    name: 'Top Caption',
+    name: 'Third',
     desc: 'White panel above, Twitter-meme energy',
     panel: { x: 0, y: 0, width: 1, height: 0.18, color: '#ffffff' },
     slots: [
@@ -80,7 +80,7 @@ export const TEMPLATES = [
   },
   {
     id: 'subtitle',
-    name: 'Subtitle',
+    name: 'Fourth',
     desc: 'Like a Wes Anderson screencap',
     slots: [
       {
@@ -96,7 +96,7 @@ export const TEMPLATES = [
   },
   {
     id: 'stamp',
-    name: 'Verdict Stamp',
+    name: 'Fifth',
     desc: 'A bold verdict in the corner',
     slots: [
       {
@@ -112,7 +112,7 @@ export const TEMPLATES = [
   },
   {
     id: 'headline',
-    name: 'Headline',
+    name: 'Sixth',
     desc: 'Newspaper-style headline + dek',
     slots: [
       {
