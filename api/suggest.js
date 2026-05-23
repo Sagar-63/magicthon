@@ -1,7 +1,10 @@
 /**
  * POST /api/suggest
  *
- * Request:  { imageUrl: string }     // public URL Claude can fetch
+ * Request (one of):
+ *   { imageUrl: string }                                  // public URL Claude fetches
+ *   { imageData: base64String, mediaType?: string }       // image bytes inline
+ *
  * Response: { suggestions: [{templateId, texts, headline}, ...] }
  *
  * Mode:
@@ -28,10 +31,22 @@ export default async function handler(req, res) {
   let body
   try { body = await readJson(req) } catch { return badRequest(res, 'invalid JSON') }
 
-  const { imageUrl } = body
-  if (!imageUrl || typeof imageUrl !== 'string') {
-    return badRequest(res, 'imageUrl (string) is required')
+  const { imageUrl, imageData, mediaType } = body
+  if (!imageUrl && !imageData) {
+    return badRequest(res, 'imageUrl OR imageData is required')
   }
+
+  // Build the image content block for Claude
+  const imageBlock = imageUrl
+    ? { type: 'image', source: { type: 'url', url: imageUrl } }
+    : {
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: mediaType || 'image/jpeg',
+          data: imageData,
+        },
+      }
 
   // ─── Mock mode ────────────────────────────────────────────────────
   if (mode.claude === 'mock') {
@@ -52,10 +67,7 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'user',
-          content: [
-            { type: 'image', source: { type: 'url', url: imageUrl } },
-            { type: 'text', text: USER_PROMPT },
-          ],
+          content: [imageBlock, { type: 'text', text: USER_PROMPT }],
         },
       ],
       tools: [SUGGESTION_TOOL],

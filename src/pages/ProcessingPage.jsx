@@ -1,62 +1,71 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { fetchSuggestions } from '../lib/api'
 import './Stub.css'
 
-// Placeholder mock until we wire the Claude vision endpoint.
-// Returns 6 suggestions, one per template, with believable captions.
-const MOCK_SUGGESTIONS = [
-  {
-    id: 1,
-    templateId: 'classic',
-    texts: { top: 'WHEN THE BUG FIXES ITSELF', bottom: "BUT YOU DON'T KNOW WHY" },
-    headline: "when the bug fixes itself",
-  },
-  {
-    id: 2,
-    templateId: 'caption-bar',
-    texts: { caption: 'pov: you finally finished the side project' },
-    headline: 'pov: you finally finished the side project',
-  },
-  {
-    id: 3,
-    templateId: 'top-caption',
-    texts: { caption: 'me, an intellectual, after one cup of coffee:' },
-    headline: 'me, an intellectual, after one cup of coffee',
-  },
-  {
-    id: 4,
-    templateId: 'subtitle',
-    texts: { subtitle: 'and that’s how I knew the demo was going to crash.' },
-    headline: "wes anderson screencap",
-  },
-  {
-    id: 5,
-    templateId: 'stamp',
-    texts: { stamp: 'VERDICT: ICONIC' },
-    headline: 'verdict: iconic',
-  },
-  {
-    id: 6,
-    templateId: 'headline',
-    texts: {
-      headline: 'Local Dev Discovers Inner Peace',
-      dek: 'sources confirm it lasted twelve minutes.',
-    },
-    headline: 'local dev discovers inner peace',
-  },
+// Local fallback if /api/suggest fails entirely (network down etc).
+// In normal mock mode the server itself returns canned suggestions, so
+// this only kicks in for a genuine failure.
+const FALLBACK_SUGGESTIONS = [
+  { templateId: 'classic',     headline: 'when the bug fixes itself',  texts: { top: 'WHEN THE BUG FIXES ITSELF', bottom: "BUT YOU DON'T KNOW WHY" } },
+  { templateId: 'caption-bar', headline: 'pov: shipping a side project', texts: { caption: 'pov: you finally finished the side project' } },
+  { templateId: 'top-caption', headline: 'me after one cup of coffee', texts: { caption: 'me, an intellectual, after one cup of coffee:' } },
+  { templateId: 'subtitle',    headline: 'wes anderson energy',         texts: { subtitle: 'and that’s how I knew the demo was going to crash.' } },
+  { templateId: 'stamp',       headline: 'verdict: iconic',             texts: { stamp: 'VERDICT: ICONIC' } },
+  { templateId: 'headline',    headline: 'breaking: local dev calm',    texts: { headline: 'Local Dev Discovers Inner Peace', dek: 'sources confirm it lasted twelve minutes.' } },
 ]
 
 export default function ProcessingPage({ photo, onReady }) {
+  const [status, setStatus] = useState('thinking') // 'thinking' | 'error'
+  const [errorMsg, setErrorMsg] = useState(null)
+
   useEffect(() => {
-    const t = setTimeout(() => onReady(MOCK_SUGGESTIONS), 1400)
-    return () => clearTimeout(t)
-  }, [onReady])
+    if (!photo?.file) {
+      onReady(FALLBACK_SUGGESTIONS)
+      return
+    }
+
+    const controller = new AbortController()
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const { suggestions } = await fetchSuggestions(photo.file, {
+          signal: controller.signal,
+        })
+        if (!cancelled) onReady(suggestions)
+      } catch (err) {
+        if (cancelled || err.name === 'AbortError') return
+        console.error('[processing] suggest failed:', err)
+        setStatus('error')
+        setErrorMsg(err.message || 'something went wrong')
+        // Fall back so the user can still continue rather than getting stuck.
+        setTimeout(() => {
+          if (!cancelled) onReady(FALLBACK_SUGGESTIONS)
+        }, 1200)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+      controller.abort()
+    }
+  }, [photo, onReady])
 
   return (
     <div className="stub">
       <div className="stub-thumb" style={{ backgroundImage: `url(${photo?.url})` }} />
       <div className="stub-spinner" />
-      <h2>Reading the room…</h2>
-      <p>Looking at your photo and thinking up six directions.</p>
+      {status === 'thinking' ? (
+        <>
+          <h2>Reading the room…</h2>
+          <p>Looking at your photo and thinking up six directions.</p>
+        </>
+      ) : (
+        <>
+          <h2>Going with defaults…</h2>
+          <p>{errorMsg}. Continuing so you can still make something.</p>
+        </>
+      )}
     </div>
   )
 }
