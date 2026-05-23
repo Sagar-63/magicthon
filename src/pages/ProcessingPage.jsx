@@ -1,20 +1,53 @@
 import { useEffect } from 'react'
 import './Stub.css'
 
-// Placeholder — will call Claude vision endpoint here.
-// For now, fakes a 1.5s "thinking" delay and hands back mock suggestions.
+// Placeholder mock until we wire the Claude vision endpoint.
+// Returns 6 suggestions, one per template, with believable captions.
+const MOCK_SUGGESTIONS = [
+  {
+    id: 1,
+    templateId: 'classic',
+    texts: { top: 'WHEN THE BUG FIXES ITSELF', bottom: "BUT YOU DON'T KNOW WHY" },
+    headline: "when the bug fixes itself",
+  },
+  {
+    id: 2,
+    templateId: 'caption-bar',
+    texts: { caption: 'pov: you finally finished the side project' },
+    headline: 'pov: you finally finished the side project',
+  },
+  {
+    id: 3,
+    templateId: 'top-caption',
+    texts: { caption: 'me, an intellectual, after one cup of coffee:' },
+    headline: 'me, an intellectual, after one cup of coffee',
+  },
+  {
+    id: 4,
+    templateId: 'subtitle',
+    texts: { subtitle: 'and that’s how I knew the demo was going to crash.' },
+    headline: "wes anderson screencap",
+  },
+  {
+    id: 5,
+    templateId: 'stamp',
+    texts: { stamp: 'VERDICT: ICONIC' },
+    headline: 'verdict: iconic',
+  },
+  {
+    id: 6,
+    templateId: 'headline',
+    texts: {
+      headline: 'Local Dev Discovers Inner Peace',
+      dek: 'sources confirm it lasted twelve minutes.',
+    },
+    headline: 'local dev discovers inner peace',
+  },
+]
+
 export default function ProcessingPage({ photo, onReady }) {
   useEffect(() => {
-    const t = setTimeout(() => {
-      onReady([
-        { id: 1, templateId: 'drake', caption: '...' },
-        { id: 2, templateId: 'distracted', caption: '...' },
-        { id: 3, templateId: 'top-bottom', caption: '...' },
-        { id: 4, templateId: 'brain', caption: '...' },
-        { id: 5, templateId: 'two-buttons', caption: '...' },
-        { id: 6, templateId: 'caption-only', caption: '...' },
-      ])
-    }, 1500)
+    const t = setTimeout(() => onReady(MOCK_SUGGESTIONS), 1400)
     return () => clearTimeout(t)
   }, [onReady])
 
