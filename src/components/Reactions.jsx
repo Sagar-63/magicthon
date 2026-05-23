@@ -13,6 +13,8 @@ export default function Reactions({ memeId, mode = 'react', onReactionLanded }) 
   const [bumped, setBumped] = useState({}) // emoji -> timestamp, for bump animation
   const [floats, setFloats] = useState([]) // [{id, emoji, x}]
   const containerRef = useRef(null)
+  const reactionsRef = useRef({})
+  useEffect(() => { reactionsRef.current = reactions }, [reactions])
 
   // Initial load from API.
   useEffect(() => {
@@ -33,15 +35,47 @@ export default function Reactions({ memeId, mode = 'react', onReactionLanded }) 
     setTimeout(() => setFloats((f) => f.filter((it) => it.id !== id)), 1400)
   }
 
-  // Same-browser cross-tab live updates.
+  // Same-browser cross-tab live updates. Float only — no button bump.
   useEffect(() => {
     const unsubscribe = subscribeToReactions(memeId, ({ emoji, counts }) => {
       if (counts) setReactions(counts)
-      setBumped((b) => ({ ...b, [emoji]: Date.now() }))
       pushFloat(emoji)
       onReactionLanded?.(emoji)
     })
     return unsubscribe
+  }, [memeId, onReactionLanded])
+
+  // Cross-device updates via polling. Stops when the tab isn't visible.
+  useEffect(() => {
+    if (!memeId) return
+    const POLL_MS = 2500
+    let cancelled = false
+
+    const tick = async () => {
+      if (cancelled || document.visibilityState !== 'visible') return
+      try {
+        const m = await getMeme(memeId)
+        if (cancelled || !m) return
+        const next = m.reactions || {}
+        const prev = reactionsRef.current
+        const newlyBumped = REACTION_EMOJIS.filter(
+          (e) => (next[e] || 0) > (prev[e] || 0),
+        )
+        // Poll updates come from someone else's tap — only show the ambient
+        // float, not the button bump (which reads as a hover state).
+        newlyBumped.forEach((e) => {
+          pushFloat(e)
+          onReactionLanded?.(e)
+        })
+        setReactions(next)
+      } catch { /* swallow transient errors */ }
+    }
+
+    const interval = setInterval(tick, POLL_MS)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
   }, [memeId, onReactionLanded])
 
   const handleClick = async (emoji) => {
