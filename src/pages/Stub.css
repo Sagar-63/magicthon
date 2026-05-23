@@ -1,0 +1,98 @@
+.stub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 48px 0;
+  text-align: center;
+  flex: 1;
+}
+
+.stub h2 {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.stub p {
+  color: var(--text-dim);
+  font-size: 15px;
+}
+
+.stub-mono {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-mute);
+}
+
+.stub-thumb {
+  width: 280px;
+  height: 280px;
+  border-radius: var(--radius-md);
+  background-size: cover;
+  background-position: center;
+  background-color: var(--bg-elev);
+  border: 1px solid var(--border);
+}
+
+.stub-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.stub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.stub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: transform var(--t-fast), border-color var(--t-fast);
+}
+
+.stub-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.stub-card-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius-sm);
+}
+
+.stub-card-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.stub-actions {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .stub-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

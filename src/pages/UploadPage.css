@@ -1,0 +1,355 @@
+.upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 48px 0 32px;
+  text-align: center;
+  gap: 48px;
+}
+
+.upload-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 720px;
+}
+
+.upload-title {
+  font-family: var(--display);
+  font-size: clamp(40px, 7vw, 84px);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.upload-title .accent {
+  color: var(--accent);
+  font-style: italic;
+}
+
+.upload-sub {
+  font-size: clamp(15px, 1.6vw, 18px);
+  color: var(--text-dim);
+  max-width: 480px;
+  line-height: 1.55;
+}
+
+/* ─── Tiles ─────────────────────────────────────────────────────── */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 24px;
+  padding: 28px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: transform var(--t-med), border-color var(--t-med), background var(--t-med);
+  position: relative;
+  overflow: hidden;
+  min-height: 180px;
+}
+
+.tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(198, 255, 61, 0.08),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity var(--t-med);
+  pointer-events: none;
+}
+
+.tile:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.tile:hover::before,
+.tile--active::before {
+  opacity: 1;
+}
+
+.tile:hover .tile-arrow {
+  transform: translateX(4px);
+  color: var(--accent);
+}
+
+.tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tile-label {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.tile-hint {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-mute);
+  letter-spacing: 0.02em;
+}
+
+.tile-arrow {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  font-size: 20px;
+  color: var(--text-mute);
+  transition: transform var(--t-med), color var(--t-med);
+}
+
+@media (max-width: 720px) {
+  .upload {
+    padding: 24px 0;
+    gap: 32px;
+  }
+  .tiles {
+    grid-template-columns: 1fr;
+  }
+  .tile {
+    min-height: auto;
+    padding: 20px;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+  .tile-arrow {
+    position: static;
+  }
+}
+
+/* ─── Format strip ──────────────────────────────────────────────── */
+.formats {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-mute);
+  letter-spacing: 0.02em;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ─── Drag banner ───────────────────────────────────────────────── */
+.drag-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #0a0a0a;
+  font-family: var(--display);
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  z-index: 10000;
+  letter-spacing: -0.01em;
+  animation: pop 200ms ease-out;
+}
+
+@keyframes pop {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+/* ─── Overlay (paste + webcam) ──────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+  animation: fade-in 200ms ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.overlay-box {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 420px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.overlay-box h3 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.overlay-box p {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.overlay-box kbd {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: var(--text);
+}
+
+/* ─── Webcam ────────────────────────────────────────────────────── */
+.webcam-box {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+  width: 100%;
+}
+
+.webcam-frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.webcam-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.webcam-loading {
+  position: absolute;
+  font-family: var(--mono);
+  color: var(--text-mute);
+  font-size: 13px;
+}
+
+.webcam-error {
+  text-align: center;
+  padding: 24px;
+}
+
+.webcam-error p {
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.webcam-hint {
+  color: var(--text-mute) !important;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.webcam-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn-ghost,
+.btn-primary {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  transition: transform var(--t-fast), background var(--t-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-ghost {
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  border-color: var(--border-strong);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #0a0a0a;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: var(--bg-elev-2);
+  color: var(--text-mute);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.shutter {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  display: inline-block;
+}
